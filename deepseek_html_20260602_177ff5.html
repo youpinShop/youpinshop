@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>youpinShop — товары и услуги</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            background-color: #0b0b14;
+            color: #eef2ff;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+        }
+
+        /* КАСТОМНАЯ МЫШКА */
+        .cursor {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #b77cff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: 0.05s linear;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px rgba(183, 124, 255, 0.6);
+            background: rgba(183, 124, 255, 0.1);
+        }
+        .cursor-follower {
+            width: 8px;
+            height: 8px;
+            background: #b77cff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: 0.1s ease;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 12px #b77cff;
+        }
+        a:hover ~ .cursor, button:hover ~ .cursor, .product-card:hover ~ .cursor {
+            transform: translate(-50%, -50%) scale(1.5);
+            background: rgba(183, 124, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ШАПКА ПРОДАВЦА */
+        .seller-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding: 2rem 0;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        .avatar {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #b77cff, #6c48b3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 0 20px rgba(183, 124, 255, 0.4);
+        }
+        .seller-info h1 {
+            font-size: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.3rem;
+        }
+        .status {
+            display: inline-block;
+            background: #1f8b4c;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            margin-right: 1rem;
+        }
+        .rating {
+            color: #ffb83b;
+            font-weight: bold;
+        }
+        .stats {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: #a0a5c0;
+        }
+        .reg-date {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 0.3rem;
+        }
+
+        /* КАТЕГОРИИ И ТОВАРЫ */
+        .category {
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #b77cff;
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .product-card {
+            background: #11111f;
+            border-radius: 20px;
+            padding: 1.2rem;
+            border: 1px solid #282842;
+            transition: all 0.2s;
+        }
+        .product-card:hover {
+            border-color: #b77cff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .product-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #b77cff;
+            font-family: monospace;
+            white-space: nowrap;
+        }
+        .product-desc {
+            color: #a5abcf;
+            font-size: 0.8rem;
+            margin: 0.5rem 0;
+        }
+        .badge-auto {
+            display: inline-block;
+            background: #2a4e3a;
+            color: #a0f0c0;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            margin-right: 0.5rem;
+        }
+        .badge-platform {
+            display: inline-block;
+            background: #2a2a4a;
+            color: #c0b0ff;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+        }
+        .stock-count {
+            font-size: 0.7rem;
+            color: #7f8c8d;
+            margin-top: 0.6rem;
+        }
+        .btn-buy {
+            display: inline-block;
+            background: #b77cff;
+            color: #0a0a1a;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            transition: 0.2s;
+            width: 100%;
+            text-align: center;
+            margin-top: 0.8rem;
+        }
+        .btn-buy:hover {
+            background: #c88eff;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #2a2a3a;
+            margin-top: 2rem;
+            color: #7a7faa;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 700px) {
+            .cursor, .cursor-follower { display: none; }
+            * { cursor: auto; }
+            .container { padding: 0 1rem; }
+            .seller-header { justify-content: center; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="cursor"></div>
+<div class="cursor-follower"></div>
+
+<div class="container">
+    <!-- ИНФОРМАЦИЯ О ПРОДАВЦЕ (из ваших данных) -->
+    <div class="seller-header">
+        <div class="avatar">🛒</div>
+        <div class="seller-info">
+            <h1>youpinShop <span style="color:#b77cff;">:3</span></h1>
+            <div>
+                <span class="status">⭐ Онлайн</span>
+                <span class="rating">★★★★★ (5.0)</span>
+                <span style="margin-left: 0.5rem;">✅ 26 отзывов</span>
+            </div>
+            <div class="stats">
+                <span>📅 Регистрация: 18 февраля 2025</span>
+                <span>💬 Ответ: быстро</span>
+            </div>
+            <div class="reg-date">🔹 Только цифровые товары | Автовыдача | Гарантия</div>
+        </div>
+    </div>
+
+    <!-- ========== КАТЕГОРИЯ 1: Прочее Among Us ========== -->
+    <div class="category">🎮 Among Us — Гайды</div>
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">Как побеждать в Among Us в 90% случаев</span>
+                <span class="price">1.16 ₽</span>
+            </div>
+            <div>
+                <span class="badge-auto">⚡ Автовыдача</span>
+                <span class="badge-platform">🖥️ PC</span>
+            </div>
+            <div class="product-desc">Подробный гайд по стратегии и психологии игры. Мгновенная выдача.</div>
+            <div class="stock-count">📦 Остаток: много</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+    </div>
+
+    <!-- ========== КАТЕГОРИЯ 2: Оффлайн активации Dark Souls / Sekiro ========== -->
+    <div class="category">⚔️ Оффлайн активации Dark Souls & Sekiro</div>
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">Dark Souls 1-2-3 + Sekiro</span>
+                <span class="price">5.86 ₽</span>
+            </div>
+            <div>
+                <span class="badge-auto">⚡ Автовыдача</span>
+                <span class="badge-platform">🎮 Оффлайн доступ</span>
+            </div>
+            <div class="product-desc">Полный оффлайн доступ ко всем трём частям Dark Souls + Sekiro. Работает навсегда.</div>
+            <div class="stock-count">📦 Остаток: 999+</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">Sekiro: Shadows Die Twice</span>
+                <span class="price">5.86 ₽</span>
+            </div>
+            <div>
+                <span class="badge-auto">⚡ Автовыдача</span>
+                <span class="badge-platform">🎮 Оффлайн доступ</span>
+            </div>
+            <div class="product-desc">Оффлайн активация Sekiro. Работает без интернета после установки.</div>
+            <div class="stock-count">📦 Остаток: 999+</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+    </div>
+
+    <!-- ========== КАТЕГОРИЯ 3: Услуги Discord ========== -->
+    <div class="category">💬 Услуги Discord</div>
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">Как зайти в Discord, если он заблокирован</span>
+                <span class="price">2.32 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Автовыдача</span></div>
+            <div class="product-desc">Рабочие методы обхода блокировки Discord. Подходит для всех регионов.</div>
+            <div class="stock-count">📦 Остаток: 999 998</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">Гайд по обходу бана железа</span>
+                <span class="price">24.24 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Автовыдача</span></div>
+            <div class="product-desc">Инструкция по снятию hardware-бана (железо). Работает на 100%.</div>
+            <div class="stock-count">📦 Остаток: много</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+    </div>
+
+    <!-- ========== КАТЕГОРИЯ 4: Аккаунты Resident Evil ========== -->
+    <div class="category">🧟 Аккаунты Resident Evil (аренда)</div>
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">Resident Evil 2 Remake</span>
+                <span class="price">5.86 ₽</span>
+            </div>
+            <div><span class="badge-platform">🎮 Аренда аккаунта</span></div>
+            <div class="product-desc">Полный доступ к игре. Оффлайн режим. На 5 человек.</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">Resident Evil: Requiem</span>
+                <span class="price">5.86 ₽</span>
+            </div>
+            <div><span class="badge-platform">🎮 Аренда аккаунта | PC</span></div>
+            <div class="product-desc">Полный доступ, 5 людей. Оффлайн активация.</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+    </div>
+
+    <!-- ========== КАТЕГОРИЯ 5: Tower Defense Simulator Roblox (самое большое) ========== -->
+    <div class="category">🏰 Tower Defense Simulator (Roblox)</div>
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">TDS | ПЛЮШ DJ BOOTH + Swarmer + Gladiator + ВСЕ СКИНЫ 2023-2026</span>
+                <span class="price">7026 ₽</span>
+            </div>
+            <div><span class="badge-platform">🎮 Аккаунт</span></div>
+            <div class="product-desc">11.7k гемов, все легендарные скины. Полный коллекционный аккаунт.</div>
+            <div class="stock-count">📦 Остаток: 1 шт.</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">🚀 Пройду Badlands II (быстро)</span>
+                <span class="price">40.99 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Быстро!</span><span class="badge-platform">🎮 Услуги</span></div>
+            <div class="product-desc">Прохождение сложнейшего режима Badlands II. Гарантия.</div>
+            <div class="stock-count">📦 Остаток: 999 996</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">🍕 Пройду Pizza Party</span>
+                <span class="price">35.13 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Быстро!</span><span class="badge-platform">🎮 Услуги</span></div>
+            <div class="product-desc">Прохождение режима Pizza Party. Выполняется быстро.</div>
+            <div class="stock-count">📦 Остаток: 999 997</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">🏅 Polluted Wasteland II</span>
+                <span class="price">105.40 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Быстро!</span><span class="badge-platform">🎮 Услуги</span></div>
+            <div class="product-desc">Сложнейший режим Polluted Wasteland II. Профессионально.</div>
+            <div class="stock-count">📦 Остаток: 999 997</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">🍕 Molten (прохождение)</span>
+                <span class="price">23.42 ₽</span>
+            </div>
+            <div><span class="badge-platform">🎮 Услуги</span></div>
+            <div class="product-desc">Быстрое прохождение режима Molten.</div>
+            <div class="stock-count">📦 Остаток: 999 999</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">❄️ Fallen (прохождение)</span>
+                <span class="price">35.13 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Быстро!</span><span class="badge-platform">🎮 Услуги</span></div>
+            <div class="product-desc">Режим Fallen. Гарантия прохождения.</div>
+            <div class="stock-count">📦 Остаток: 999 996</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">🏅 Frost Mode</span>
+                <span class="price">46.84 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Быстро!</span><span class="badge-platform">🎮 Услуги</span></div>
+            <div class="product-desc">Прохождение Frost Mode. Сложный режим.</div>
+            <div class="stock-count">📦 Остаток: 999 998</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">📖 Стратегия для Троих</span>
+                <span class="price">1.17 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Автовыдача</span><span class="badge-platform">📘 Гайды</span></div>
+            <div class="product-desc">Стратегия прохождения сложных карт на троих игроков.</div>
+            <div class="stock-count">📦 Остаток: 999 995</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">📖 Стратегия для одного (на выбор)</span>
+                <span class="price">1.17 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Автовыдача</span><span class="badge-platform">📘 Гайды</span></div>
+            <div class="product-desc">Стратегия прохождения соло. Выберите любую карту.</div>
+            <div class="stock-count">📦 Остаток: 999 995</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">📖 Стратегия для двоих (на выбор)</span>
+                <span class="price">1.17 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Автовыдача</span><span class="badge-platform">📘 Гайды</span></div>
+            <div class="product-desc">Стратегия для кооперативного прохождения вдвоём.</div>
+            <div class="stock-count">📦 Остаток: 999 994</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+    </div>
+
+    <!-- ========== КАТЕГОРИЯ 6: Оффлайн активации прочих игр (уже добавили Sekiro выше, но продублирую другие) ========== -->
+    <div class="category">🎮 Оффлайн активации (другие игры)</div>
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="product-header">
+                <span class="product-title">Sekiro + Dark Souls 1-2-3</span>
+                <span class="price">5.86 ₽</span>
+            </div>
+            <div><span class="badge-auto">⚡ Автовыдача</span><span class="badge-platform">🎮 Оффлайн доступ</span></div>
+            <div class="product-desc">Полный доступ ко всем частям Dark Souls и Sekiro. Оффлайн режим.</div>
+            <a href="#" class="btn-buy">Купить →</a>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    🛒 youpinShop :3 — продавец на FunPay с 18 февраля 2025 | 26 отзывов, рейтинг 5.0 | Автовыдача 24/7
+</div>
+
+<script>
+    // Кастомная мышка
+    const cursor = document.querySelector('.cursor');
+    const follower = document.querySelector('.cursor-follower');
+
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        follower.style.left = e.clientX + 'px';
+        follower.style.top = e.clientY + 'px';
+    });
+
+    const hoverElements = document.querySelectorAll('a, .btn-buy, .product-card');
+    hoverElements.forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            cursor.style.background = 'rgba(183, 124, 255, 0.3)';
+        });
+        el.addEventListener('mouseleave', () => {
+            cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+            cursor.style.background = 'rgba(183, 124, 255, 0.1)';
+        });
+    });
+</script>
+</body>
+</html>
